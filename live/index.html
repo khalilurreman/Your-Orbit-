@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go Live - Your Orbit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white h-screen flex flex-col overflow-hidden">
+
+    <div class="absolute top-0 left-0 right-0 p-4 z-20 flex justify-between items-start bg-gradient-to-b from-black/80 to-transparent">
+        <div class="flex items-center space-x-3">
+            <button onclick="window.location.href='../index.html'" class="bg-black/40 p-2 rounded-full backdrop-blur-md">✕</button>
+            <div class="bg-red-600 px-3 py-1 rounded-md flex items-center space-x-2">
+                <div class="w-2 h-2 bg-white rounded-full animate-ping"></div>
+                <span class="text-[10px] font-black uppercase tracking-widest">Live</span>
+            </div>
+            <div class="bg-black/40 px-3 py-1 rounded-md backdrop-blur-md text-[10px] font-bold">👤 0</div>
+        </div>
+    </div>
+
+    <div class="flex-1 bg-zinc-900 relative flex items-center justify-center">
+        <div class="text-center">
+            <div class="text-6xl mb-4">🎥</div>
+            <p class="text-zinc-500 font-bold uppercase tracking-tighter">Waiting for Camera...</p>
+        </div>
+        
+        <div class="absolute bottom-20 left-4 right-4 z-20">
+            <div class="h-40 overflow-y-auto space-y-2 mb-4 mask-gradient-top">
+                <div class="flex items-center space-x-2 bg-black/20 p-2 rounded-lg w-fit backdrop-blur-sm">
+                    <span class="text-red-400 font-bold text-xs">System:</span>
+                    <span class="text-xs">Welcome to the Live Stream!</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-4 bg-black border-t border-zinc-900 flex items-center space-x-4">
+        <input type="text" placeholder="Say something..." class="flex-1 bg-zinc-900 border-none rounded-full px-4 py-2 text-sm focus:ring-1 focus:ring-red-600 outline-none">
+        <button class="bg-red-600 w-10 h-10 rounded-full flex items-center justify-center shadow-lg shadow-red-600/40">🚀</button>
+        <button class="bg-zinc-800 w-10 h-10 rounded-full flex items-center justify-center">🎁</button>
+    </div>
+
+</body>
+</html>
