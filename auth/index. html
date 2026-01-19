@@ -1,0 +1,10 @@
+<body class="bg-black text-white p-8 flex flex-col justify-center h-screen">
+    <h1 class="text-3xl font-black text-red-600 mb-8">MyOrbit</h1>
+    
+    <div id="login-box" class="space-y-4">
+        <input type="email" placeholder="Email Address" class="w-full bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+        <input type="password" placeholder="Password" class="w-full bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+        <button class="w-full bg-red-600 p-4 rounded-xl font-bold">Log In</button>
+        <p class="text-center text-zinc-500 text-sm">Don't have an account? <span class="text-white font-bold cursor-pointer" onclick="toggleAuth()">Sign Up</span></p>
+    </div>
+</body>
