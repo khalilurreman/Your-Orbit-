@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Your Orbit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white h-screen flex flex-col">
+
+    <div class="p-4 border-b border-zinc-800 flex items-center bg-zinc-950">
+        <button onclick="window.location.href='../index.html'" class="mr-4 text-xl">←</button>
+        <h1 class="text-lg font-bold">My Profile</h1>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6 flex flex-col items-center">
+        <div class="relative w-32 h-32 mb-4">
+            <div class="w-full h-full bg-zinc-900 rounded-full border-2 border-red-600 flex items-center justify-center text-4xl">👤</div>
+            <button class="absolute bottom-0 right-0 bg-red-600 p-2 rounded-full text-xs">📷</button>
+        </div>
+
+        <h2 class="text-xl font-black">User Name</h2>
+        <p class="text-zinc-500 text-sm mb-6">@yourorbit_user</p>
+
+        <div class="flex space-x-8 mb-8 text-center">
+            <div><div class="font-bold">0</div><div class="text-[10px] text-zinc-500 uppercase">Posts</div></div>
+            <div><div class="font-bold">0</div><div class="text-[10px] text-zinc-500 uppercase">Followers</div></div>
+            <div><div class="font-bold">0</div><div class="text-[10px] text-zinc-500 uppercase">Following</div></div>
+        </div>
+
+        <div class="w-full space-y-3">
+            <button class="w-full bg-white text-black font-bold py-2 rounded-lg">Edit Profile</button>
+            <button class="w-full bg-zinc-900 border border-zinc-800 py-2 rounded-lg">Share Profile</button>
+        </div>
+    </div>
+
+</body>
+</html>
