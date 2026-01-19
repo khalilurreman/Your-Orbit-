@@ -3,30 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live - Your Orbit</title>
+    <title>MyOrbit - Go Live</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white h-screen flex flex-col overflow-hidden">
-    <div class="absolute top-0 left-0 right-0 p-4 z-20 flex justify-between bg-gradient-to-b from-black/80 to-transparent">
-        <button onclick="window.location.href='../index.html'" class="bg-black/40 p-2 rounded-full">✕</button>
-        <div class="bg-red-600 px-3 py-1 rounded-md flex items-center space-x-2">
-            <div class="w-2 h-2 bg-white rounded-full animate-ping"></div>
-            <span class="text-[10px] font-black uppercase tracking-widest text-white">Live</span>
+
+    <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-50 bg-gradient-to-b from-black/70 to-transparent">
+        <div class="flex items-center space-x-2">
+            <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded animate-pulse">LIVE</span>
+            <span class="text-sm font-medium">0 viewers</span>
+        </div>
+        <button onclick="window.location.href='../index.html'" class="text-white text-2xl">✕</button>
+    </div>
+
+    <div class="relative flex-grow bg-zinc-900 flex items-center justify-center">
+        <video id="webcam" autoplay playsinline class="w-full h-full object-cover"></video>
+        
+        <div id="loadingText" class="absolute inset-0 flex flex-col items-center justify-center bg-black">
+            <div class="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-zinc-500 text-sm italic">Starting Camera...</p>
+            <button onclick="startCamera()" class="mt-4 bg-red-600 px-6 py-2 rounded-full font-bold text-sm">Allow Camera</button>
         </div>
     </div>
 
-    <video id="webcam" autoplay playsinline class="w-full h-full object-cover"></video>
+    <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+        <div class="flex justify-around items-center">
+            <button class="p-3 bg-white/10 rounded-full">🎙️</button>
+            <button onclick="startCamera()" class="bg-red-600 w-16 h-16 rounded-full border-4 border-white flex items-center justify-center shadow-lg shadow-red-900/40">
+                <div class="w-4 h-4 bg-white rounded-sm"></div>
+            </button>
+            <button class="p-3 bg-white/10 rounded-full">🔄</button>
+        </div>
+    </div>
 
     <script>
-        async function startCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                document.getElementById('webcam').srcObject = stream;
-            } catch (err) {
-                alert("Please allow camera access in your browser settings to go live!");
-            }
+    async function startCamera() {
+        const video = document.getElementById('webcam');
+        const loading = document.getElementById('loadingText');
+        
+        try {
+            // Camera aur Audio ki request
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "user" }, 
+                audio: true 
+            });
+            video.srcObject = stream;
+            loading.style.display = 'none'; // Camera chalte hi loading mita dein
+        } catch (err) {
+            console.error("Camera Error:", err);
+            alert("Aapka camera block hai. Please browser settings (Lock icon 🔒) se 'Allow' karein.");
         }
-        window.onload = startCamera;
+    }
+
+    // Page khulte hi camera shuru karne ki koshish karein
+    window.onload = startCamera;
     </script>
+
 </body>
 </html>
