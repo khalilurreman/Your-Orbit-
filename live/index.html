@@ -1,75 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyOrbit Camera</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="video-container">
+
+    <div class="camera-box">
         <video id="webcam" autoplay playsinline muted></video>
-        
-        <div class="overlay">
-            <button id="btn-open">Open</button>
-            <button id="btn-record" class="hidden">Record</button>
-            <button id="btn-stop" class="hidden">Stop</button>
-        </div>
     </div>
 
-    <script src="script.js"></script>
+    <div class="ui-layer">
+        <button id="btnOpen">Open Camera</button>
+        <button id="btnStart" class="hidden">Start Record</button>
+        <button id="btnStop" class="hidden">Stop & Save</button>
+    </div>
+
+    <script src="app.js"></script>
 </body>
-</html>
-body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #000;
-}
-
-.video-container {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-}
-
-#webcam {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Is se screen puri bhari hui nazar aayegi */
-}
-
-.overlay {
-    position: absolute;
-    bottom: 50px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-button {
-    padding: 15px 30px;
-    border-radius: 30px;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    background: white;
-}
-
-.hidden { display: none; }
-<!DOCTYPE html>
-<html>
-<head>
-    <title>MyOrbit Camera</title>
-    <link rel="stylesheet" href="style.css"> </head>
-<body>
-    <video id="webcam" autoplay playsinline muted></video>
-    
-    <div class="controls">
-        <button id="btnOpen">Open</button>
-        <button id="btnStart" disabled>Start</button>
-        <button id="btnStop" disabled>Stop</button>
-    </div>
-
-    <script src="script.js"></script> </body>
 </html>
