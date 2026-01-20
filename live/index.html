@@ -1,23 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyOrbit Camera</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+let mediaStream = null;
+let mediaRecorder = null;
+let recordedChunks = [];
 
-    <div class="camera-box">
-        <video id="webcam" autoplay playsinline muted></video>
-    </div>
+const videoDisplay = document.getElementById('webcam');
+const openBtn = document.getElementById('btnOpen');
+const startBtn = document.getElementById('btnStart');
+const stopBtn = document.getElementById('btnStop');
 
-    <div class="ui-layer">
-        <button id="btnOpen">Open Camera</button>
-        <button id="btnStart" class="hidden">Start Record</button>
-        <button id="btnStop" class="hidden">Stop & Save</button>
-    </div>
+// Function to get Camera access
+async function initializeCamera() {
+    try {
+        const constraints = {
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: "user"
+            },
+            audio: true
+        };
 
-    <script src="app.js"></script>
-</body>
-</html>
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        videoDisplay.srcObject = mediaStream;
+        
+        // Update Buttons
+        openBtn.classList.add('hidden');
+        startBtn.classList.remove('hidden');
+    } catch (error) {
+        console.error("Access Denied:", error);
+        alert("Camera access failed. Please enable permissions in browser settings.");
+    }
+}
+
+// Function to start recording
+function beginRecording() {
+    recordedChunks = [];
+    mediaRecorder = new MediaRecorder(mediaStream);
+
+    mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+        }
+    };
+
+    mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = 'myorbit_capture.mp4';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+
+    mediaRecorder.start();
+    startBtn.classList.add('hidden');
+    stopBtn.classList.remove('hidden');
+}
+
+// Function to stop recording
+function endRecording() {
+    mediaRecorder.stop();
+    stopBtn.classList.add('hidden');
+    startBtn.classList.remove('hidden');
+}
+
+// Linking Buttons to Functions
+openBtn.addEventListener('click', initializeCamera);
+startBtn.addEventListener('click', beginRecording);
+stopBtn.addEventListener('click', endRecording);
