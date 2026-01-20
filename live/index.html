@@ -1,71 +1,74 @@
-let mediaStream = null;
-let mediaRecorder = null;
-let recordedChunks = [];
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MyOrbit Camera Fix</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+        #webcam { width: 100vw; height: 100vh; object-fit: cover; }
+        .buttons { position: absolute; bottom: 30px; width: 100%; text-align: center; z-index: 5; }
+        button { padding: 15px 30px; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; background: white; }
+        .hide { display: none; }
+    </style>
+</head>
+<body>
 
-const videoDisplay = document.getElementById('webcam');
-const openBtn = document.getElementById('btnOpen');
-const startBtn = document.getElementById('btnStart');
-const stopBtn = document.getElementById('btnStop');
+    <video id="webcam" autoplay playsinline muted></video>
 
-// Function to get Camera access
-async function initializeCamera() {
+    <div class="buttons">
+        <button id="btnOpen">Open Camera</button>
+        <button id="btnStart" class="hide">Start</button>
+        <button id="btnStop" class="hide">Stop</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+let stream, recorder, chunks = [];
+
+const v = document.getElementById('webcam');
+const b1 = document.getElementById('btnOpen');
+const b2 = document.getElementById('btnStart');
+const b3 = document.getElementById('btnStop');
+
+// Step 1: Access Camera
+b1.onclick = async () => {
     try {
-        const constraints = {
-            video: {
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                facingMode: "user"
-            },
-            audio: true
-        };
-
-        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-        videoDisplay.srcObject = mediaStream;
-        
-        // Update Buttons
-        openBtn.classList.add('hidden');
-        startBtn.classList.remove('hidden');
-    } catch (error) {
-        console.error("Access Denied:", error);
-        alert("Camera access failed. Please enable permissions in browser settings.");
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        v.srcObject = stream;
+        b1.classList.add('hide');
+        b2.classList.remove('hide');
+    } catch (e) {
+        alert("Camera error: " + e.message);
     }
-}
+};
 
-// Function to start recording
-function beginRecording() {
-    recordedChunks = [];
-    mediaRecorder = new MediaRecorder(mediaStream);
-
-    mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-            recordedChunks.push(event.data);
-        }
+// Step 2: Start Record
+b2.onclick = () => {
+    chunks = [];
+    recorder = new MediaRecorder(stream);
+    
+    recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
     };
 
-    mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunks, { type: 'video/mp4' });
-        const downloadUrl = URL.createObjectURL(blob);
+    recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = 'myorbit_capture.mp4';
-        document.body.appendChild(a);
+        a.href = url;
+        a.download = 'myorbit_video.webm';
         a.click();
-        document.body.removeChild(a);
     };
 
-    mediaRecorder.start();
-    startBtn.classList.add('hidden');
-    stopBtn.classList.remove('hidden');
-}
+    recorder.start();
+    b2.classList.add('hide');
+    b3.classList.remove('hide');
+};
 
-// Function to stop recording
-function endRecording() {
-    mediaRecorder.stop();
-    stopBtn.classList.add('hidden');
-    startBtn.classList.remove('hidden');
-}
-
-// Linking Buttons to Functions
-openBtn.addEventListener('click', initializeCamera);
-startBtn.addEventListener('click', beginRecording);
-stopBtn.addEventListener('click', endRecording);
+// Step 3: Stop Record
+b3.onclick = () => {
+    recorder.stop();
+    b3.classList.add('hide');
+    b2.classList.remove('hide');
+};
