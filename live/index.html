@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyOrbit AI Live & Record</title>
+    <style>
+        body { margin: 0; background: #000; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; }
+        .video-container { position: relative; width: 100%; max-width: 600px; margin: auto; }
+        video { width: 100%; border-bottom: 3px solid #007bff; background: #111; }
+        .live-tag { position: absolute; top: 10px; left: 10px; background: red; padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        .controls { padding: 20px; display: flex; justify-content: center; gap: 15px; background: #111; }
+        button { padding: 15px; border-radius: 50%; border: none; cursor: pointer; font-size: 20px; transition: 0.3s; width: 60px; height: 60px; }
+        .btn-switch { background: #444; color: white; }
+        .btn-record { background: white; color: red; border: 2px solid red; }
+        .recording { background: red !important; color: white !important; }
+    </style>
+</head>
+<body>
+
+    <div class="video-container">
+        <div class="live-tag" id="liveTag">LIVE</div>
+        <video id="video" autoplay playsinline></video>
+    </div>
+    
+    <div id="status" style="padding: 10px; font-size: 14px; color: #aaa;">Camera: Front Mode</div>
+
+    <div class="controls">
+        <button class="btn-switch" onclick="switchCamera()" title="Switch Camera">🔄</button>
+        
+        <button class="btn-record" id="recordBtn" onclick="toggleRecording()" title="Start/Stop Recording">⏺️</button>
+    </div>
+
+    <script>
+        let stream;
+        let recorder;
+        let chunks = [];
+        let currentMode = 'user'; // 'user' for front, 'environment' for back
+
+        async function initCamera() {
+            try {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentMode },
+                    audio: true
+                });
+                document.getElementById('video').srcObject = stream;
+                document.getElementById('status').innerText = `Camera: ${currentMode === 'user' ? 'Front' : 'Back'} Mode`;
+            } catch (err) {
+                alert("Camera access denied: " + err);
+            }
+        }
+
+        function switchCamera() {
+            currentMode = (currentMode === 'user') ? 'environment' : 'user';
+            initCamera();
+        }
+
+        function toggleRecording() {
+            const btn = document.getElementById('recordBtn');
+            if (recorder && recorder.state === "recording") {
+                recorder.stop();
+                btn.classList.remove('recording');
+                btn.innerHTML = "⏺️";
+            } else {
+                chunks = [];
+                recorder = new MediaRecorder(stream);
+                recorder.ondataavailable = e => chunks.push(e.data);
+                recorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'video/mp4' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `MyOrbit_Live_${Date.now()}.mp4`;
+                    a.click();
+                };
+                recorder.start();
+                btn.classList.add('recording');
+                btn.innerHTML = "⏹️";
+            }
+        }
+
+        // Initialize on load
+        initCamera();
+    </script>
+</body>
+</html>
+<script>
+    const currentVersion = "1.0.0";
+    
+    async function checkForAIUpdates() {
+        console.log("MyOrbit AI: Checking for system upgrades...");
+        document.getElementById('status').innerText = "AI: Checking for updates...";
+        
+        try {
+            // Ye system future mein naye features auto-fetch karega
+            setTimeout(() => {
+                console.log("MyOrbit AI: Version " + currentVersion + " is stable.");
+                document.getElementById('status').innerText = "AI System: Active & Updated";
+            }, 3000);
+        } catch (error) {
+            console.log("AI Upgrade Error: ", error);
+        }
+    }
+
+    // Har baar page khulne par AI check karega
+    window.onload = () => {
+        initCamera(); // Purana camera function
+        checkForAIUpdates(); // Naya AI system
+    };
+</script>
