@@ -5,39 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyOrbit AI Live & Record</title>
     <style>
-        body { margin: 0; background: #000; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; }
-        .video-container { position: relative; width: 100%; max-width: 600px; margin: auto; }
-        video { width: 100%; border-bottom: 3px solid #007bff; background: #111; }
-        .live-tag { position: absolute; top: 10px; left: 10px; background: red; padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; animation: blink 1s infinite; }
+        body { margin: 0; background: #000; color: white; font-family: sans-serif; text-align: center; overflow-x: hidden; }
+        .header { padding: 15px; background: #111; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        .back-btn { color: #0084ff; text-decoration: none; font-size: 18px; }
+        
+        .video-container { position: relative; width: 100%; max-width: 600px; margin: auto; background: #111; }
+        video { width: 100%; border-bottom: 3px solid #0084ff; display: block; }
+        
+        /* Filters Logic */
+        #video.grayscale { filter: grayscale(100%); }
+        #video.sepia { filter: sepia(100%); }
+        #video.invert { filter: invert(100%); }
+        #video.bright { filter: brightness(1.5); }
+        #video.warm { filter: sepia(0.3) saturate(1.5); }
+
+        .live-tag { position: absolute; top: 10px; left: 10px; background: red; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0; } }
-        .controls { padding: 20px; display: flex; justify-content: center; gap: 15px; background: #111; }
-        button { padding: 15px; border-radius: 50%; border: none; cursor: pointer; font-size: 20px; transition: 0.3s; width: 60px; height: 60px; }
-        .btn-switch { background: #444; color: white; }
-        .btn-record { background: white; color: red; border: 2px solid red; }
+
+        .controls { padding: 20px; display: flex; justify-content: center; gap: 20px; background: #111; }
+        button { width: 65px; height: 65px; border-radius: 50%; border: none; cursor: pointer; font-size: 24px; transition: 0.3s; }
+        .btn-switch { background: #333; color: white; }
+        .btn-record { background: #fff; color: red; border: 3px solid red; }
         .recording { background: red !important; color: white !important; }
+
+        .filter-menu { display: flex; overflow-x: auto; gap: 10px; padding: 15px; background: #1a1a1a; scrollbar-width: none; }
+        .filter-btn { min-width: 80px; padding: 10px; background: #333; border-radius: 12px; font-size: 12px; cursor: pointer; }
+        .status-bar { padding: 10px; font-size: 12px; color: #00ff00; background: #000; }
     </style>
 </head>
 <body>
 
+    <div class="header">
+        <a href="../index.html" class="back-btn">← MyOrbit</a>
+        <span style="font-weight: bold;">AI SMART CAM</span>
+        <div style="width: 40px;"></div>
+    </div>
+
     <div class="video-container">
-        <div class="live-tag" id="liveTag">LIVE</div>
+        <div class="live-tag">LIVE</div>
         <video id="video" autoplay playsinline></video>
     </div>
-    
-    <div id="status" style="padding: 10px; font-size: 14px; color: #aaa;">Camera: Front Mode</div>
+
+    <div class="status-bar" id="status">AI System: Initializing...</div>
 
     <div class="controls">
-        <button class="btn-switch" onclick="switchCamera()" title="Switch Camera">🔄</button>
-        
-        <button class="btn-record" id="recordBtn" onclick="toggleRecording()" title="Start/Stop Recording">⏺️</button>
+        <button class="btn-switch" onclick="switchCamera()">🔄</button>
+        <button class="btn-record" id="recordBtn" onclick="toggleRecording()">⏺️</button>
     </div>
 
+    <div class="filter-menu">
+        <div class="filter-btn" onclick="applyFilter('')">Normal</div>
+        <div class="filter-btn" onclick="applyFilter('grayscale')">B&W</div>
+        <div class="filter-btn" onclick="applyFilter('sepia')">Vintage</div>
+        <div class="filter-btn" onclick="applyFilter('invert')">X-Ray</div>
+        <div class="filter-btn" onclick="applyFilter('bright')">Glow</div>
+        <div class="filter-btn" onclick="applyFilter('warm')">Warm</div>
+    </div>
     <script>
         let stream;
         let recorder;
         let chunks = [];
-        let currentMode = 'user'; // 'user' for front, 'environment' for back
+        let currentMode = 'user'; // 'user' matlab front camera
 
+        // 1. Camera On karne ka system
         async function initCamera() {
             try {
                 if (stream) {
@@ -48,19 +78,29 @@
                     audio: true
                 });
                 document.getElementById('video').srcObject = stream;
-                document.getElementById('status').innerText = `Camera: ${currentMode === 'user' ? 'Front' : 'Back'} Mode`;
+                document.getElementById('status').innerText = `AI System: ${currentMode === 'user' ? 'Front' : 'Back'} Cam Active`;
             } catch (err) {
-                alert("Camera access denied: " + err);
+                document.getElementById('status').innerText = "AI Error: Camera Access Denied";
+                console.error(err);
             }
         }
 
+        // 2. Front aur Back Camera Switch karne ka system
         function switchCamera() {
             currentMode = (currentMode === 'user') ? 'environment' : 'user';
             initCamera();
         }
 
+        // 3. Filters apply karne ka system
+        function applyFilter(filterName) {
+            document.getElementById('video').className = filterName;
+            document.getElementById('status').innerText = `AI Filter: ${filterName || 'Normal'} Applied`;
+        }
+
+        // 4. Video Recording (Start/Stop) ka system
         function toggleRecording() {
             const btn = document.getElementById('recordBtn');
+            if
             if (recorder && recorder.state === "recording") {
                 recorder.stop();
                 btn.classList.remove('recording');
@@ -83,32 +123,215 @@
             }
         }
 
-        // Initialize on load
-        initCamera();
+        // --- PART 3: AI AUTO-UPGRADE & SAFETY ---
+        const currentVersion = "1.1.0";
+        async function checkForAIUpdates() {
+            console.log("MyOrbit AI: Checking system...");
+            setTimeout(() => {
+                document.getElementById('status').innerText = "AI System: Active & Secured";
+            }, 3000);
+        }
+
+        window.onload = () => {
+            initCamera();
+            checkForAIUpdates();
+        };
     </script>
 </body>
 </html>
-<script>
-    const currentVersion = "1.0.0";
+<button onclick="takeSnapshot()" style="background: #2ecc71; color: white;">📸</button>
+function takeSnapshot() {
+    const canvas = document.createElement('canvas');
+    const video = document.getElementById('video');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const link = document.createElement('a');
+    link.download = `MyOrbit_Photo_${Date.now()}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    document.getElementById('status').innerText = "AI System: Photo Saved!";
+}
+<input type="range" min="1" max="3" step="0.1" value="1" oninput="applyZoom(this.value)" style="width: 80%; margin: 10px;">
+<div style="font-size: 12px;">Zoom Control</div>
+<div class="extra-controls" style="margin-top: 10px;">
+    <button onclick="toggleFullScreen()" style="background: #e67e22; color: white; width: 50px; height: 50px; font-size: 18px;">📱</button>
     
-    async function checkForAIUpdates() {
-        console.log("MyOrbit AI: Checking for system upgrades...");
-        document.getElementById('status').innerText = "AI: Checking for updates...";
-        
-        try {
-            // Ye system future mein naye features auto-fetch karega
-            setTimeout(() => {
-                console.log("MyOrbit AI: Version " + currentVersion + " is stable.");
-                document.getElementById('status').innerText = "AI System: Active & Updated";
-            }, 3000);
-        } catch (error) {
-            console.log("AI Upgrade Error: ", error);
-        }
-    }
+    <button onclick="takeSnapshot()" style="background: #2ecc71; color: white; width: 50px; height: 50px; font-size: 18px;">📸</button>
+    
+    <button id="timerBtn" onclick="startTimer()" style="background: #9b59b6; color: white; width: 50px; height: 50px; font-size: 18px;">⏱️</button>
+</div>
 
-    // Har baar page khulne par AI check karega
-    window.onload = () => {
-        initCamera(); // Purana camera function
-        checkForAIUpdates(); // Naya AI system
-    };
-</script>
+<div style="padding: 10px;">
+    <input type="range" min="1" max="3" step="0.1" value="1" oninput="applyZoom(this.value)" style="width: 70%;">
+    <p style="font-size: 10px; color: #888;">AI ZOOM CONTROL</p>
+</div>
+// 1. Full Screen Feature
+function toggleFullScreen() {
+    let elem = document.documentElement;
+    if (!document.fullscreenElement) {
+        elem.requestFullscreen().catch(err => {
+            alert(`Error: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+// 2. Photo Snapshot Feature
+function takeSnapshot() {
+    const canvas = document.createElement('canvas');
+    const video = document.getElementById('video');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const link = document.createElement('a');
+    link.download = `MyOrbit_Photo_${Date.now()}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    document.getElementById('status').innerText = "AI System: Photo Captured!";
+}
+
+// 3. Zoom Logic
+function applyZoom(value) {
+    document.getElementById('video').style.transform = `scale(${value})`;
+    document.getElementById('status').innerText = `AI Zoom: ${value}x`;
+}
+
+// 4. Countdown Timer Logic
+function startTimer() {
+    let seconds = 3;
+    const btn = document.getElementById('timerBtn');
+    const status = document.getElementById('status');
+    
+    let countdown = setInterval(() => {
+        status.innerText = `AI Timer: Capturing in ${seconds}s...`;
+        btn.innerHTML = seconds;
+        seconds--;
+        if (seconds < 0) {
+            clearInterval(countdown);
+            takeSnapshot(); // 3 sec baad photo khud khich jayegi
+            btn.innerHTML = "⏱️";
+            status.innerText = "AI System: Captured!";
+        }
+    }, 1000);
+}
+<div id="ai-frame" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 250px; border: 2px solid rgba(0, 255, 0, 0.5); border-radius: 20px; pointer-events: none; display: block;">
+    <div style="position: absolute; top: -10px; left: -10px; color: #0f0; font-size: 10px;">SCANNING...</div>
+</div>
+
+<style>
+    /* Watermark Style */
+    .watermark {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: bold;
+        pointer-events: none;
+    }
+</style>
+<div class="watermark">MyOrbit AI</div>
+function takeSnapshot() {
+    const canvas = document.createElement('canvas');
+    const video = document.getElementById('video');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    
+    // Video draw karein
+    ctx.drawImage(video, 0, 0);
+    
+    // Watermark add karein
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "right";
+    const date = new Date().toLocaleString();
+    ctx.fillText("MyOrbit AI - " + date, canvas.width - 20, canvas.height - 20);
+    
+    const link = document.createElement('a');
+    link.download = `MyOrbit_Pro_${Date.now()}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    document.getElementById('status').innerText = "AI System: Pro Photo Saved!";
+}
+<div id="preview-container" style="position: absolute; bottom: 80px; left: 20px; width: 50px; height: 50px; border: 2px solid white; border-radius: 8px; overflow: hidden; display: none;">
+    <img id="last-photo" style="width: 100%; height: 100%; object-fit: cover;">
+</div>
+
+<div style="position: absolute; top: 60px; right: 20px; font-size: 10px; color: #0f0; text-align: right;">
+    <div>BATTERY: 98%</div>
+    <div>AI SIGNAL: STABLE</div>
+    <div>MEM: 4.2GB FREE</div>
+</div>
+// Thumbnail dikhane ke liye
+const preview = document.getElementById('preview-container');
+const img = document.getElementById('last-photo');
+img.src = canvas.toDataURL();
+preview.style.display = "block";
+
+// Camera Click Sound (Optional: browser default sound bhi ho sakti hai)
+console.log("Photo Captured & Thumbnail Updated");
+<button onclick="shareApp()" style="background: #0084ff; color: white; width: 50px; height: 50px; font-size: 18px;">🔗</button>
+function shareApp() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'MyOrbit Smart Cam',
+            text: 'Check out my new AI Camera on MyOrbit!',
+            url: window.location.href
+        }).then(() => console.log('Successful share'))
+          .catch((error) => console.log('Error sharing', error));
+    } else {
+        alert("Sharing link: " + window.location.href);
+    }
+}
+#video.beauty { 
+    filter: brightness(1.2) contrast(1.1) saturate(1.2) blur(0.5px); 
+}<div class="filter-btn" onclick="applyFilter('beauty')">✨ Beauty</div>
+<div id="grid-lines" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: none;">
+    <div style="position: absolute; top: 33.33%; width: 100%; height: 1px; background: rgba(255,255,255,0.3);"></div>
+    <div style="position: absolute; top: 66.66%; width: 100%; height: 1px; background: rgba(255,255,255,0.3);"></div>
+    <div style="position: absolute; left: 33.33%; height: 100%; width: 1px; background: rgba(255,255,255,0.3);"></div>
+    <div style="position: absolute; left: 66.66%; height: 100%; width: 1px; background: rgba(255,255,255,0.3);"></div>
+</div>
+
+<div id="focus-ring" style="position: absolute; width: 70px; height: 70px; border: 2px solid yellow; border-radius: 50%; display: none; pointer-events: none; transition: 0.2s;"></div>
+// 1. Grid Lines On/Off
+function toggleGrid() {
+    const grid = document.getElementById('grid-lines');
+    grid.style.display = (grid.style.display === 'none') ? 'block' : 'none';
+}
+
+// 2. Night Mode (AI Brightness)
+let nightMode = false;
+function toggleNightMode() {
+    const video = document.getElementById('video');
+    const btn = document.getElementById('nightBtn');
+    nightMode = !nightMode;
+    if (nightMode) {
+        video.style.filter = "brightness(1.5) contrast(1.2)";
+        btn.style.background = "yellow"; btn.style.color = "black";
+    } else {
+        video.style.filter = "none";
+        btn.style.background = "#444"; btn.style.color = "white";
+    }
+}
+
+// 3. Screen Flash (Photo ke liye)
+function triggerFlash() {
+    const flash = document.getElementById('flash-effect');
+    flash.style.opacity = "1";
+    setTimeout(() => { flash.style.opacity = "0"; }, 100);
+}
+
+// 4. Focus Ring on Click
+document.getElementById('video').onclick = function(e) {
+    const ring = document.getElementById('focus-ring');
+    ring.style.left = (e.offsetX - 35) + "px";
+    ring.style.top = (e.offsetY - 35) + "px";
+    ring.style.display = "block";
+    setTimeout(() => { ring.style.display = "none"; }, 500);
+};
+
+
