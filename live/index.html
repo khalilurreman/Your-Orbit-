@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+it<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -95,6 +95,405 @@
                 }
             }, 1000);
         });
+    </script>
+</body>
+</html>
+<div class="camera-container">
+    <video id="videoFeed" width="100%" autoplay playsinline></video>
+    <div class="controls">
+        <button id="btnStart" onclick="initCamera()">Start Camera</button>
+        <button id="btnRecord" onclick="handleRecord()" style="display:none;">Record</button>
+    </div>
+</div>
+
+<script>
+let mediaStream = null;
+let recorder = null;
+let chunks = [];
+
+async function initCamera() {
+    const constraints = {
+        video: { facingMode: "user" },
+        audio: true
+    };
+
+    try {
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const video = document.getElementById('videoFeed');
+        video.srcObject = mediaStream;
+        
+        document.getElementById('btnStart').style.display = 'none';
+        document.getElementById('btnRecord').style.display = 'inline-block';
+    } catch (error) {
+        console.error("Camera Error:", error);
+    }
+}
+
+function handleRecord() {
+    if (recorder && recorder.state === "recording") {
+        recorder.stop();
+        document.getElementById('btnRecord').innerText = "Record";
+    } else {
+        chunks = [];
+        recorder = new MediaRecorder(mediaStream);
+        recorder.ondataavailable = (e) => chunks.push(e.data);
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: "video/mp4" });
+            const videoURL = URL.createObjectURL(blob);
+            console.log("Video URL:", videoURL);
+        };
+        recorder.start();
+        document.getElementById('btnRecord').innerText = "Stop";
+    }
+}
+</script>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MyOrbit Camera</title>
+</head>
+<body>
+
+    <div id="app">
+        <video id="liveFeed" width="400" autoplay playsinline muted style="background: black;"></video>
+        
+        <video id="playback" width="400" controls style="display: none; background: black;"></video>
+
+        <div class="controls" style="margin-top: 20px;">
+            <button id="startCam">Open Camera</button>
+            <button id="startRec" style="display: none;">Start Recording</button>
+            <button id="stopRec" style="display: none;">Stop Recording</button>
+            <button id="reDo" style="display: none;">Record Again</button>
+        </div>
+    </div>
+
+    <script>
+        const liveFeed = document.getElementById('liveFeed');
+        const playback = document.getElementById('playback');
+        const startCamBtn = document.getElementById('startCam');
+        const startRecBtn = document.getElementById('startRec');
+        const stopRecBtn = document.getElementById('stopRec');
+        const reDoBtn = document.getElementById('reDo');
+
+        let stream;
+        let recorder;
+        let dataChunks = [];
+
+        // 1. Start Camera
+        startCamBtn.onclick = async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                liveFeed.srcObject = stream;
+                startCamBtn.style.display = 'none';
+                startRecBtn.style.display = 'inline-block';
+            } catch (err) {
+                console.error("Camera Error:", err);
+            }
+        };
+
+        // 2. Start Recording
+        startRecBtn.onclick = () => {
+            dataChunks = [];
+            recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = (e) => dataChunks.push(e.data);
+            
+            recorder.onstop = () => {
+                const blob = new Blob(dataChunks, { type: 'video/mp4' });
+                const videoURL = URL.createObjectURL(blob);
+                playback.src = videoURL;
+                
+                liveFeed.style.display = 'none';
+                playback.style.display = 'block';
+                stopRecBtn.style.display = 'none';
+                reDoBtn.style.display = 'inline-block';
+            };
+
+            recorder.start();
+            startRecBtn.style.display = 'none';
+            stopRecBtn.style.display = 'inline-block';
+        };
+
+        // 3. Stop Recording
+        stopRecBtn.onclick = () => {
+            recorder.stop();
+        };
+
+        // 4. Record Again
+        reDoBtn.onclick = () => {
+            playback.style.display = 'none';
+            liveFeed.style.display = 'block';
+            reDoBtn.style.display = 'none';
+            startRecBtn.style.display = 'inline-block';
+        };
+    </script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MyOrbit Camera Fixed</title>
+</head>
+<body>
+
+    <video id="v" width="100%" height="300" autoplay playsinline style="background:black"></video>
+    
+    <hr>
+
+    <button id="btn_on">Open Camera</button>
+    <button id="btn_start" disabled>Start Record</button>
+    <button id="btn_stop" disabled>Stop & Save</button>
+
+    <script>
+        let stream, recorder, chunks = [];
+        const v = document.getElementById('v');
+        const b_on = document.getElementById('btn_on');
+        const b_start = document.getElementById('btn_start');
+        const b_stop = document.getElementById('btn_stop');
+
+        // 1. Camera Access
+        b_on.onclick = async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                v.srcObject = stream;
+                b_start.disabled = false;
+                b_on.disabled = true;
+            } catch (e) {
+                console.log("Error: " + e);
+            }
+        };
+
+        // 2. Recording Logic
+        b_start.onclick = () => {
+            chunks = [];
+            recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/mp4' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'orbit_video.mp4';
+                a.click();
+            };
+            recorder.start();
+            b_start.disabled = true;
+            b_stop.disabled = false;
+        };
+
+        // 3. Stop Logic
+        b_stop.onclick = () => {
+            recorder.stop();
+            b_start.disabled = false;
+            b_stop.disabled = true;
+        };
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MyOrbit Record System</title>
+    <style>
+        #preview { width: 100%; max-width: 500px; background: #000; border-radius: 8px; }
+        .controls { margin-top: 15px; }
+        button { padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <video id="preview" autoplay playsinline muted></video>
+    
+    <div class="controls">
+        <button id="btnOpen">Open Camera</button>
+        <button id="btnStart" disabled>Start Record</button>
+        <button id="btnStop" disabled>Stop Record</button>
+    </div>
+
+    <script>
+        const preview = document.getElementById('preview');
+        const btnOpen = document.getElementById('btnOpen');
+        const btnStart = document.getElementById('btnStart');
+        const btnStop = document.getElementById('btnStop');
+
+        let stream;
+        let recorder;
+        let chunks = [];
+
+        // Step 1: Initialize Camera
+        btnOpen.onclick = async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                preview.srcObject = stream;
+                btnOpen.disabled = true;
+                btnStart.disabled = false;
+            } catch (err) {
+                console.error("Camera Error:", err);
+            }
+        };
+
+        // Step 2: Start Recording
+        btnStart.onclick = () => {
+            chunks = [];
+            recorder = new MediaRecorder(stream);
+            
+            recorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunks.push(e.data);
+            };
+
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/mp4' });
+                const url = URL.createObjectURL(blob);
+                
+                // Automatic Download for testing
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'orbit_record.mp4';
+                a.click();
+            };
+
+            recorder.start();
+            btnStart.disabled = true;
+            btnStop.disabled = false;
+        };
+
+        // Step 3: Stop Recording
+        btnStop.onclick = () => {
+            recorder.stop();
+            btnStart.disabled = false;
+            btnStop.disabled = true;
+        };
+    </script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MyOrbit Professional Camera</title>
+</head>
+<body>
+
+    <video id="view" width="100%" autoplay playsinline muted style="background:black"></video>
+    
+    <div style="margin-top: 10px;">
+        <button id="open">Open Camera</button>
+        <button id="start" disabled>Start Record</button>
+        <button id="stop" disabled>Stop & Save</button>
+    </div>
+
+    <script>
+        let stream, recorder, data = [];
+        const v = document.getElementById('view');
+        const b1 = document.getElementById('open');
+        const b2 = document.getElementById('start');
+        const b3 = document.getElementById('stop');
+
+        b1.onclick = async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                v.srcObject = stream;
+                b1.disabled = true;
+                b2.disabled = false;
+            } catch (e) {
+                console.error("Error", e);
+            }
+        };
+
+        b2.onclick = () => {
+            data = [];
+            recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = (e) => data.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(data, { type: 'video/mp4' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'myorbit_video.mp4';
+                link.click();
+            };
+            recorder.start();
+            b2.disabled = true;
+            b3.disabled = false;
+        };
+
+        b3.onclick = () => {
+            recorder.stop();
+            b2.disabled = false;
+            b3.disabled = true;
+        };
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyOrbit Full Screen</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+        #videoView { width: 100vw; height: 100vh; object-fit: cover; }
+        .buttons { position: absolute; bottom: 30px; width: 100%; text-align: center; z-index: 10; }
+        button { padding: 12px 24px; margin: 5px; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; }
+        #start { background: #28a745; color: white; }
+        #stop { background: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+
+    <video id="videoView" autoplay playsinline muted></video>
+
+    <div class="buttons">
+        <button id="init">Open Camera</button>
+        <button id="start" style="display:none;">Start Recording</button>
+        <button id="stop" style="display:none;">Stop & Save</button>
+    </div>
+
+    <script>
+        let stream, recorder, chunks = [];
+        const video = document.getElementById('videoView');
+        const btnInit = document.getElementById('init');
+        const btnStart = document.getElementById('start');
+        const btnStop = document.getElementById('stop');
+
+        // Function call for Camera
+        btnInit.onclick = async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                video.srcObject = stream;
+                btnInit.style.display = 'none';
+                btnStart.style.display = 'inline-block';
+            } catch (err) {
+                console.log("Error:", err);
+            }
+        };
+
+        // Function call for Start
+        btnStart.onclick = () => {
+            chunks = [];
+            recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = (e) => chunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/mp4' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'orbit_full.mp4';
+                a.click();
+            };
+            recorder.start();
+            btnStart.style.display = 'none';
+            btnStop.style.display = 'inline-block';
+        };
+
+        // Function call for Stop
+        btnStop.onclick = () => {
+            recorder.stop();
+            btnStop.style.display = 'none';
+            btnStart.style.display = 'inline-block';
+        };
     </script>
 </body>
 </html>
