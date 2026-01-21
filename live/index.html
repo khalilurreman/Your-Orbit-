@@ -1,71 +1,22 @@
-// MyOrbit Advanced Camera Engine
-let mediaRecorder;
-let recordedChunks = [];
-let isRecording = false;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MyOrbit AI Camera</title>
+    <style>
+        video, canvas { position: absolute; left: 0; top: 0; }
+        .controls { position: relative; z-index: 10; margin-top: 500px; }
+    </style>
+</head>
+<body>
+    <h1>AI Object Detection Camera</h1>
+    <div style="position: relative;">
+        <video id="video" width="640" height="480" autoplay muted></video>
+        <canvas id="canvas" width="640" height="480"></canvas>
+    </div>
 
-/**
- * 1. Automatic Camera Initialization
- */
-async function initMyOrbitCamera() {
-    const videoElement = document.getElementById('camera-view');
-    
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "user" }, 
-            audio: true 
-        });
-        videoElement.srcObject = stream;
-        
-        // Start Processing AI & Live Stream
-        setupLiveStream(stream);
-        startAIScan(videoElement);
-        
-    } catch (err) {
-        console.error("Camera Auto-Start Failed:", err);
-    }
-}
-
-/**
- * 2. Live Streaming & Recording Logic
- */
-function setupLiveStream(stream) {
-    mediaRecorder = new MediaRecorder(stream);
-    
-    mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-            recordedChunks.push(event.data);
-            // Here you can send 'event.data' to your Live Server API
-        }
-    };
-
-    mediaRecorder.start(1000); // Captures data every 1 second
-    isRecording = true;
-}
-
-/**
- * 3. AI Safety Integration (Real-time)
- */
-function startAIScan(video) {
-    setInterval(async () => {
-        const isSafe = await checkCommunityGuidelines(video); // AI Model Call
-        
-        if (!isSafe) {
-            stopEverything();
-            triggerViolationSystem(); // Your 3-Level Warning Logic
-        }
-    }, 500);
-}
-
-/**
- * 4. Stop and Save Function
- */
-function stopEverything() {
-    if (isRecording) {
-        mediaRecorder.stop();
-        isRecording = false;
-        console.log("Recording Stopped due to Security Protocol.");
-    }
-}
-
-// Automatically start when the app opens
-window.onload = initMyOrbitCamera;
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <script src="script.js"></script>
+</body>
+</html>
