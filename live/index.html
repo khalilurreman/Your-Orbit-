@@ -1,74 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MyOrbit Camera Fix</title>
-    <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
-        #webcam { width: 100vw; height: 100vh; object-fit: cover; }
-        .buttons { position: absolute; bottom: 30px; width: 100%; text-align: center; z-index: 5; }
-        button { padding: 15px 30px; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; background: white; }
-        .hide { display: none; }
-    </style>
-</head>
-<body>
+// MyOrbit AI Camera Core Logic
+let sessionViolationCount = 0;
 
-    <video id="webcam" autoplay playsinline muted></video>
+/**
+ * Initializes the AI camera and processes video frames
+ */
+async function startAICamera() {
+    const video = document.getElementById('myorbit-video');
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
 
-    <div class="buttons">
-        <button id="btnOpen">Open Camera</button>
-        <button id="btnStart" class="hide">Start</button>
-        <button id="btnStop" class="hide">Stop</button>
-    </div>
+    // AI Processing Loop
+    setInterval(async () => {
+        const results = await detectProhibitedContent(video);
+        if (results.violationDetected) {
+            sessionViolationCount++;
+            handleViolationLevel(sessionViolationCount);
+        }
+    }, 500); // Check every 500ms
+}
 
-    <script src="script.js"></script>
-</body>
-</html>
-let stream, recorder, chunks = [];
-
-const v = document.getElementById('webcam');
-const b1 = document.getElementById('btnOpen');
-const b2 = document.getElementById('btnStart');
-const b3 = document.getElementById('btnStop');
-
-// Step 1: Access Camera
-b1.onclick = async () => {
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        v.srcObject = stream;
-        b1.classList.add('hide');
-        b2.classList.remove('hide');
-    } catch (e) {
-        alert("Camera error: " + e.message);
+/**
+ * Logic for handling the 3-level warning hierarchy
+ */
+function handleViolationLevel(count) {
+    if (count === 1) {
+        // First Level: UI Block
+        executePrimaryBlock();
+    } else if (count === 2) {
+        // Second Level: Internal System Notification
+        logViolationToDatabase();
+    } else if (count >= 3) {
+        // Third Level: Final Action / Account Restriction
+        restrictAccountAccess();
     }
-};
+}
 
-// Step 2: Start Record
-b2.onclick = () => {
-    chunks = [];
-    recorder = new MediaRecorder(stream);
+/**
+ * Feature: Manual Review Request
+ * Allows users to appeal if the AI misidentifies content
+ */
+function submitManualAppeal(data) {
+    const appealData = {
+        timestamp: new Date().toISOString(),
+        userId: getCurrentUser(),
+        videoFrame: data.frame
+    };
     
-    recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
-    };
-
-    recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'myorbit_video.webm';
-        a.click();
-    };
-
-    recorder.start();
-    b2.classList.add('hide');
-    b3.classList.remove('hide');
-};
-
-// Step 3: Stop Record
-b3.onclick = () => {
-    recorder.stop();
-    b3.classList.add('hide');
-    b2.classList.remove('hide');
-};
+    // Send to admin panel for verification
+    api.post('/review-request', appealData);
+}
