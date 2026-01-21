@@ -1,51 +1,71 @@
-// MyOrbit AI Camera Core Logic
-let sessionViolationCount = 0;
+// MyOrbit Advanced Camera Engine
+let mediaRecorder;
+let recordedChunks = [];
+let isRecording = false;
 
 /**
- * Initializes the AI camera and processes video frames
+ * 1. Automatic Camera Initialization
  */
-async function startAICamera() {
-    const video = document.getElementById('myorbit-video');
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    video.srcObject = stream;
-
-    // AI Processing Loop
-    setInterval(async () => {
-        const results = await detectProhibitedContent(video);
-        if (results.violationDetected) {
-            sessionViolationCount++;
-            handleViolationLevel(sessionViolationCount);
-        }
-    }, 500); // Check every 500ms
-}
-
-/**
- * Logic for handling the 3-level warning hierarchy
- */
-function handleViolationLevel(count) {
-    if (count === 1) {
-        // First Level: UI Block
-        executePrimaryBlock();
-    } else if (count === 2) {
-        // Second Level: Internal System Notification
-        logViolationToDatabase();
-    } else if (count >= 3) {
-        // Third Level: Final Action / Account Restriction
-        restrictAccountAccess();
+async function initMyOrbitCamera() {
+    const videoElement = document.getElementById('camera-view');
+    
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "user" }, 
+            audio: true 
+        });
+        videoElement.srcObject = stream;
+        
+        // Start Processing AI & Live Stream
+        setupLiveStream(stream);
+        startAIScan(videoElement);
+        
+    } catch (err) {
+        console.error("Camera Auto-Start Failed:", err);
     }
 }
 
 /**
- * Feature: Manual Review Request
- * Allows users to appeal if the AI misidentifies content
+ * 2. Live Streaming & Recording Logic
  */
-function submitManualAppeal(data) {
-    const appealData = {
-        timestamp: new Date().toISOString(),
-        userId: getCurrentUser(),
-        videoFrame: data.frame
-    };
+function setupLiveStream(stream) {
+    mediaRecorder = new MediaRecorder(stream);
     
-    // Send to admin panel for verification
-    api.post('/review-request', appealData);
+    mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+            // Here you can send 'event.data' to your Live Server API
+        }
+    };
+
+    mediaRecorder.start(1000); // Captures data every 1 second
+    isRecording = true;
 }
+
+/**
+ * 3. AI Safety Integration (Real-time)
+ */
+function startAIScan(video) {
+    setInterval(async () => {
+        const isSafe = await checkCommunityGuidelines(video); // AI Model Call
+        
+        if (!isSafe) {
+            stopEverything();
+            triggerViolationSystem(); // Your 3-Level Warning Logic
+        }
+    }, 500);
+}
+
+/**
+ * 4. Stop and Save Function
+ */
+function stopEverything() {
+    if (isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        console.log("Recording Stopped due to Security Protocol.");
+    }
+}
+
+// Automatically start when the app opens
+window.onload = initMyOrbitCamera;
