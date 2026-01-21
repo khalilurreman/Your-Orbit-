@@ -1,22 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MyOrbit AI Camera</title>
-    <style>
-        video, canvas { position: absolute; left: 0; top: 0; }
-        .controls { position: relative; z-index: 10; margin-top: 500px; }
-    </style>
-</head>
-<body>
-    <h1>AI Object Detection Camera</h1>
-    <div style="position: relative;">
-        <video id="video" width="640" height="480" autoplay muted></video>
-        <canvas id="canvas" width="640" height="480"></canvas>
-    </div>
+import { Camera, useCameraDevices } from 'react-native-vision-camera';
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
-    <script src="script.js"></script>
-</body>
-</html>
+// Main App Component
+const ProfessionalCamera = () => {
+  const devices = useCameraDevices();
+  const [cameraPosition, setCameraPosition] = useState('back');
+  const device = devices[cameraPosition];
+
+  // 1. Photo Capture Function
+  const takePhoto = async () => {
+    const photo = await camera.current.takePhoto();
+    console.log(photo.path);
+  };
+
+  // 2. Video Recording Function
+  const startRecording = () => {
+    camera.current.startRecording({
+      onRecordingFinished: (video) => console.log(video),
+      onRecordingError: (error) => console.error(error),
+    });
+  };
+
+  if (device == null) return <LoadingView />;
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Camera
+        ref={camera}
+        style={StyleSheet.absoluteFill}
+        device={device}
+        isActive={true}
+        video={true}
+        photo={true}
+      />
+      
+      {/* UI Elements: Filters, Flip Camera, Record Buttons */}
+      <View style={styles.controls}>
+         <Button title="Flip" onPress={() => setCameraPosition(cameraPosition === 'back' ? 'front' : 'back')} />
+         <Button title="Capture" onPress={takePhoto} />
+         <Button title="Go Live" onPress={startLiveStream} />
+      </View>
+    </View>
+  );
+};
